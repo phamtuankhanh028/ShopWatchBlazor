@@ -1,0 +1,23 @@
+﻿@page "/checkout"
+@inject NavigationManager navigationmanager
+
+
+<section class="shoping-cart spad">
+<div class="container">
+    <div class="row d-flex justify-content-center align-items-center" style="min-height: 50vh;">
+        <div class="col-12 justify-content-center d-flex align-items-center flex-column">
+            <h3 class="text-center">Thanh Toán Thành Công</h3>
+            <p class="text-center">Đơn hàng của bạn đang được xử lý</p>
+            <button class="btn primary-btn " @onclick="GoBack">Go back</button>
+        </div>
+    </div>
+    
+</div>
+</section>
+
+@code {
+    private void GoBack()
+    {
+        navigationmanager.NavigateTo("/cart");
+    }
+}

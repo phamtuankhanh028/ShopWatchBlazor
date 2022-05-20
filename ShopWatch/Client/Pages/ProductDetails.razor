@@ -1,0 +1,132 @@
+﻿@page "/product/{id:int}"
+@inject IProductService ProductService
+@inject ICartService CartService
+@inject ILocalStorageService LocalStorage
+@inject IToastService ToastService
+
+
+<section class="product-details spad">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-6 col-md-6">
+                <div class="product__details__pic">
+                    <div class="product__details__pic__item">
+                        <img class="product__details__pic__item--large"
+                             src="@product.Image" alt="">
+                    </div>
+
+                </div>
+            </div>
+            <div class="col-lg-6 col-md-6">
+                <div class="product__details__text">
+                    <h3>@product.Title</h3>
+                    <div class="product__details__rating">
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star-half-o"></i>
+                        <span>(18 reviews)</span>
+                    </div>
+
+                    <div class="product__details__price">
+
+                        @if (GetSelectedVariant() != null)
+                        {
+                            @if (GetSelectedVariant().OriginalPrice > GetSelectedVariant().Price)
+                            {
+                                <h6 class="text-muted" style=" text-decoration: line-through;">$@($"{GetSelectedVariant().OriginalPrice :C0}")</h6>
+                            } @($"{@GetSelectedVariant().Price :C0}")
+                        }
+                    </div>
+                    <p>
+                        Mauris blandit aliquet elit, eget tincidunt nibh pulvinar a. Vestibulum ac diam sit amet quam
+                        vehicula elementum sed sit amet dui. Sed porttitor lectus nibh. Vestibulum ac diam sit amet
+                        quam vehicula elementum sed sit amet dui. Proin eget tortor risus.
+                    </p>
+                    @if (product.Variants != null && product.Variants.Count > 1)
+                    {
+                        <div class="form-group">
+                            <select class="form-control" @bind="currentEditionId">
+                                @foreach (var variant in product.Variants)
+                                {
+                                    <option value="@variant.EditionId">@variant.Edition.Name</option>
+                                }
+                            </select>
+                        </div>
+                    }
+                    <EditForm Model="cartItem">
+                        <div class="product__details__quantity">
+                            <div class="quantity">
+                                <div class="pro-qty">
+                                    <InputNumber id="quantity" @bind-Value="cartItem.Quantity" style="width: 70px;"/>
+                                </div>
+                            </div>
+                        </div>
+                    </EditForm>
+                    <button class="primary-btn" @onclick="AddToCart">ADD TO CARD</button>
+
+
+                </div>
+            </div>
+            <div class="col-lg-12">
+            </div>
+        </div>
+    </div>
+</section>
+
+@code {
+    private Product product = new Product();
+
+    private int currentEditionId = 1;
+
+    private CartItem cartItem = new CartItem { Quantity = 1 };
+
+    [Parameter]
+    public int Id { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        //if (ProductService.Products == null || ProductService.Products.Count == 0)
+        // {
+        // ProductService.LoadProducts();
+        // }
+
+        product = await ProductService.GetProduct(Id);    //Products.FirstOrDefault(p => p.Id == Int32.Parse(Id));
+        if (product.Variants.Count > 0)
+        {
+            currentEditionId = product.Variants[0].EditionId;
+        }
+    }
+
+    private ProductVariant GetSelectedVariant()
+    {
+        var variant = product.Variants.FirstOrDefault(v => v.EditionId == currentEditionId);
+        return variant;
+    }
+
+    private async Task AddToCart()
+    {
+        /*
+        var cart = await LocalStorage.GetItemAsync<List<ProductVariant>>("cart"); // Kiểm tra xem LocalStorage tên cart có List Product nào chưa
+            if(cart == null)
+            {
+            cart = new List<ProductVariant>();
+        }
+        cart.Add(GetSelectedVariant()); // Thêm product vào cart (cart là list )
+        await LocalStorage.SetItemAsync("cart", cart); //LocalStorage nhận cart. Khi chọn addcart đã nhận được list cart
+
+        ToastService.ShowSuccess(product.Title, "Đã thêm vào giỏ:");
+        */
+        var productVariant = GetSelectedVariant();
+        cartItem.EditionId = productVariant.EditionId;
+        cartItem.EditName = productVariant.Edition.Name;
+        cartItem.Image = product.Image;
+        cartItem.Price = productVariant.Price;
+        cartItem.ProductId = productVariant.ProductId;
+        cartItem.ProductTitle = product.Title;
+        await CartService.AddToCart(cartItem);
+
+    }
+
+}

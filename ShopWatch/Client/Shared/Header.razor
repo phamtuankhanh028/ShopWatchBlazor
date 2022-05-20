@@ -1,0 +1,54 @@
+﻿@using ShopWatch.Client.Services.Authentication
+@inject ILocalStorageService LocalStorage
+@inject AuthenticationStateProvider authStateProvider
+@inject ILocalStorageService LocalStorage
+@inject IJSRuntime js
+@inject NavigationManager navManager
+<div class="header__top">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-6 col-md-6">
+                <div class="header__top__left">
+                </div>
+            </div>
+            <div class="col-lg-6 col-md-6">
+                <div class="header__top__right">
+
+                    <div class="header__top__right__language">
+
+
+                        <AuthorizeView>
+                            <NotAuthorized>
+                                <a href="">&nbsp;No</a>
+                            </NotAuthorized>
+                            <Authorized>
+                                <a href=""><i class="fa fa-user">&nbsp;@context.User.Identity.Name</i></a>
+                            </Authorized>
+                        </AuthorizeView>
+
+                    </div>
+                    <div class="header__top__right__auth">
+                        <AuthorizeView>
+                            <Authorized>
+                                <a @onclick="Logout" href="javascript:void(0)">Logout</a>
+                            </Authorized>
+                            <NotAuthorized>
+                                <a href="/login">Login</a>
+                            </NotAuthorized>
+                        </AuthorizeView>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@code {
+    private async Task Logout()
+    {
+        var customAuthStateProvider = (CustomAuthenticationStateProvider)authStateProvider;
+        await customAuthStateProvider.UpdateAuthenticationState(null);
+        navManager.NavigateTo("/", true);
+    }
+}

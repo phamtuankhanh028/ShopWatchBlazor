@@ -1,0 +1,48 @@
+﻿@inject IProductService ProductService
+@inject NavigationManager NavigationManager
+
+
+
+<div class="hero__search__form">
+   <BlazoredTypeahead SearchMethod="@SearchProduct" 
+    TValue="Product"
+    TItem="Product"
+    Value="selectedProduct"
+    ValueChanged="HandleSearch"
+    ValueExpression="@(() => selectedProduct)"
+    placeholder="Search...."
+>
+    <SelectedTemplate>
+        @context.Title
+    </SelectedTemplate>
+    <ResultTemplate>
+        @context.Title
+    </ResultTemplate>
+    <NotFoundTemplate>
+        Xin lỗi, không tìm thấy sản phẩm..
+    </NotFoundTemplate>
+</BlazoredTypeahead>
+</div>
+
+
+
+@code {
+
+    private Product selectedProduct;
+
+    private void  HandleSearch(Product product)
+    {
+        if(product == null)
+        {
+            return;
+        }
+        selectedProduct = product;
+        NavigationManager.NavigateTo($"product/{selectedProduct.Id}");
+    }
+
+    private async Task<IEnumerable<Product>> SearchProduct(string searchText)
+    {
+        var response = await ProductService.SearchProducts(searchText);
+        return response;
+    }
+}

@@ -1,0 +1,36 @@
+﻿@inherits LayoutComponentBase
+@inject IJSRuntime js
+
+<div class="page">
+    <div class="main">
+        <header class="header">
+            <Header></Header>
+
+            <TopMenu></TopMenu>
+
+
+
+        </header>
+        <section class="hero">
+            <div class="container">
+                <div class="row">
+
+                    <NavMenu></NavMenu>
+                    <div class="col-lg-9">
+                        <div class="hero__search">
+                            <SearchMenu></SearchMenu>
+                            <div class="content">
+                                @Body
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+
+        <Footer></Footer>
+    </div>
+</div>
+<BlazoredToasts />

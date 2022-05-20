@@ -1,0 +1,44 @@
+﻿@inject ICategoryService CategoryService;
+
+
+<div class="col-lg-3" @onclick="ToggleNavMenu">
+    <div class="hero__categories">
+        <div class="hero__categories__all">
+            <i class="fa fa-bars"></i>
+            <span>All departments</span>
+        </div>
+        <ul>
+            <AuthorizeView Roles=Administrator>
+                <Authorized>
+                    <li><a href="admin/category">Category</a></li>
+                    <li><a href="/">Product</a></li>
+                     <li><a href="#">Order</a></li>
+                    <li><a href="#">Contact</a></li> 
+                </Authorized>
+                <NotAuthorized>
+                     @foreach (var category in CategoryService.Categories)
+                    {
+                        <li><a href="@category.Url">@category.Name</a></li>
+                    }
+                </NotAuthorized>
+            </AuthorizeView>
+        </ul>
+    </div>
+</div>
+
+@code {
+
+    private bool collapseNavMenu = true;
+
+    private string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CategoryService.LoadCategories();
+    }
+}

@@ -1,0 +1,83 @@
+﻿@inject ISyncLocalStorageService LocalStorage
+@inject ICartService CartService
+@implements IDisposable
+
+<AuthorizeView Roles=Administrator>
+    <NotAuthorized>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-3">
+                    <div class="header__logo">
+                        <a href="/"><img src="img/logo.png" alt=""></a>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <nav class="header__menu">
+                        <ul>
+                            <li class="active"><a href="/">Home</a></li>
+                            <li>
+                                <a href="#">Pages</a>
+                                <ul class="header__menu__dropdown">
+
+                                    <li><a href="cart">Shoping Cart</a></li>
+
+
+                                </ul>
+                            </li>
+                            <li><a href="#">Contact</a></li>
+                        </ul>
+                    </nav>
+                </div>
+                <div class="col-lg-3">
+                    <div class="header__cart">
+                        <ul>
+
+                            <li><a href="/cart"><i class="fa fa-shopping-bag"></i> <span>@GetProductCount()</span></a></li>
+                        </ul>
+
+                    </div>
+                </div>
+            </div>
+            <div class="humberger__open">
+                <i class="fa fa-bars"></i>
+            </div>
+        </div>
+    </NotAuthorized>
+    <Authorized>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-3">
+                    <div class="header__logo">
+                        <a href="/"><img src="img/logo.png" alt=""></a>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <nav class="header__menu">
+                        <h2>Quan Ly Shop Watch</h2>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </Authorized>
+</AuthorizeView>
+
+
+@code {
+
+
+    protected override void OnInitialized()
+    {
+        CartService.OnChange += StateHasChanged;        // khi có action thêm vào sẽ thây đổi số lượng
+    }
+
+    public void Dispose()
+    {
+        CartService.OnChange -= StateHasChanged;
+    }
+
+    private int GetProductCount()
+    {
+        var cart = LocalStorage.GetItem<List<ProductVariant>>("cart");
+        return cart != null ? cart.Count : 0;
+    }
+}

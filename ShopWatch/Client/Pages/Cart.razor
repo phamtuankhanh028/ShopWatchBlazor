@@ -1,0 +1,216 @@
+﻿@page "/cart"
+@inject ICartService CartService
+@inject NavigationManager NavigationManager
+@inject IPaymentService PaymentService
+@inject IToastService ToastService
+
+<!-- Shoping Cart Section Begin -->
+<section class="shoping-cart spad">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <h2>Giỏ hàng</h2>
+            </div>
+        </div>
+        @if (!orderPlace)
+        {
+            @if (cartItems == null || cartItems.Count <= 0)
+            {
+                <span>Không có sản phầm nào trong giỏ</span>
+            }
+            else
+            {
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="shoping__cart__table">
+
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th class="shoping__product">Products</th>
+                                        <th>Price</th>
+                                        <th>Quantity</th>
+                                        <th>Total</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in cartItems)
+                                    {
+                                        <tr>
+                                            <td class="shoping__cart__item">
+                                                <img src="@item.Image" alt="" width="100" height="100">
+                                                <h5>
+                                                    <a href="/product/@item.ProductId">@item.ProductTitle</a> <br />
+                                                    <p>@item.EditName</p>
+                                                </h5>
+                                            </td>
+                                            <td class="shoping__cart__price">
+                                                @($"{@item.Price :C0}")
+                                            </td>
+                                            <td class="shoping__cart__quantity">
+                                                <EditForm Model="item">
+                                                    <div class="quantity">
+                                                        <div class="pro-qty">
+                                                            <InputNumber id="quantity" @bind-Value="item.Quantity"></InputNumber>
+                                                        </div>
+                                                    </div>
+                                                </EditForm>
+                                            </td>
+                                            <td class="shoping__cart__total">
+                                                @($"{@item.Price * item.Quantity :C0}")
+                                            </td>
+                                            <td class="shoping__cart__item__close">
+                                                <span class="icon_close" @onclick="@(()=>DeleteItem(item))"></span>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="shoping__cart__btns">
+                            <a href="#" class="primary-btn cart-btn">CONTINUE SHOPPING</a>
+
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="shoping__continue">
+                            <div class="shoping__discount">
+                                <h5>Discount Codes</h5>
+                                <form action="#">
+                                    <input type="text" placeholder="Enter your coupon code">
+                                    <button type="submit" class="site-btn">APPLY COUPON</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="shoping__checkout">
+                            <h5>Cart Total</h5>
+                            <ul>
+
+                                <li>Total(@cartItems.Count): <span>@($"{@cartItems.Sum(item => item.Price * item.Quantity) :C0}")</span></li>
+                            </ul>
+                            <AuthorizeView Roles=User>
+                                <Authorized>
+                                    <button type="button" @onclick="PlaceOrder" class="primary-btn">PROCEED TO CHECKOUT</button>
+                                </Authorized>
+                                <NotAuthorized>
+                                    <a href="/register" class="primary-btn">PROCEED TO CHECKOUT</a>
+                                </NotAuthorized>
+                            </AuthorizeView>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <h3>Thank you for your order!</h3>
+            <h4>Here's what you'll get:</h4>
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="shoping__cart__table">
+
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th class="shoping__product">Products</th>
+                                    <th>Price</th>
+                                    <th>Quantity</th>
+                                    <th>Total</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in cartItems)
+                                {
+                                    <tr>
+                                        <td class="shoping__cart__item">
+                                            <img src="@item.Image" alt="" width="100" height="100">
+                                            <h5>
+                                                <a href="/product/@item.ProductId">@item.ProductTitle</a> <br />
+                                                <p>@item.EditName</p>
+                                            </h5>
+                                        </td>
+                                        <td class="shoping__cart__price">
+                                            @($"{@item.Price :C0}")
+                                        </td>
+                                        <td class="shoping__cart__quantity">
+                                        </td>
+                                        <td class="shoping__cart__total">
+                                            @($"{@item.Price * item.Quantity :C0}")
+                                        </td>
+                                        <td class="shoping__cart__item__close">
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="shoping__checkout">
+                    <h5>Cart Total</h5>
+                    <ul>
+
+                        <li>Total(@cartItems.Count): <span>@($"{cartItems.Sum(item => item.Price * item.Quantity) :C0}")</span></li>
+                    </ul>
+                    <AuthorizeView Roles=User>
+                        <Authorized>
+                            <a class="primary-btn" @onclick="PlaceOrder">PROCEED TO CHECKOUT</a>
+                        </Authorized>
+                        <NotAuthorized>
+                            <a href="/register" class="primary-btn">PROCEED TO CHECKOUT</a>
+                        </NotAuthorized>
+                    </AuthorizeView>
+
+                </div>
+            </div>
+        }
+    </div>
+</section>
+<!-- Shoping Cart Section End -->
+@code {
+    List<CartItem> cartItems = new List<CartItem>();
+    bool orderPlace = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        cartItems = await CartService.GetCartItems();
+    }
+
+    private async Task DeleteItem(CartItem item)
+    {
+        await CartService.DeleteItem(item);
+        cartItems = await CartService.GetCartItems();
+    }
+
+    private async Task PlaceOrder()
+    {
+
+        //orderPlace = true;
+        //string checkoutUrl = await CartService.Checkout();
+        // NavigationManager.NavigateTo(checkoutUrl);
+        // await CartService.EmptyCart();
+        var result = await PaymentService.AddOrder(cartItems);
+        if (result)
+        {
+            ToastService.ShowSuccess("Checkout is success");
+            await CartService.EmptyCart();
+            NavigationManager.NavigateTo("/checkout");
+        }
+        else
+        {
+            ToastService.ShowError("Checkout is false");
+        }
+    }
+
+
+}

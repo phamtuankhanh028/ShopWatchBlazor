@@ -1,0 +1,51 @@
+﻿@page "/admin/category/{id:int}"
+@inject ICategoryService CategoryService
+@inject NavigationManager navigationManager
+@inject IToastService ToastService
+
+
+<section class="shoping-cart spad">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <EditForm Model="category" OnSubmit="UpdateCategory">
+                     <div class="form-group">
+                        <label>Name</label>
+                        <InputText type="text" @bind-Value="category.Name" class="form-control"  placeholder="Enter name category" />
+
+                    </div>
+                    <div class="form-group">
+                        <label>Url</label>
+                        <InputText type="text" @bind-Value="category.Url" class="form-control" id="exampleInputEmail1" placeholder="Enter url" />
+
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+
+                </EditForm>
+            </div>
+        </div>
+    </div>
+</section>
+@code {
+    [Parameter]
+    public int Id { get; set; }
+    Category category = null;
+    protected override async Task OnInitializedAsync()
+    {
+        category = await CategoryService.GetCategoryById(Id);
+    }
+    private async Task UpdateCategory()
+    {
+        var result = await CategoryService.UpdateCategory(category);
+        if (result)
+        {
+            navigationManager.NavigateTo("/admin/category");
+            await CategoryService.LoadCategories();
+            ToastService.ShowSuccess("Update category is success");
+        }
+        else
+        {
+            ToastService.ShowError("Update category is error");
+        }
+    }
+}

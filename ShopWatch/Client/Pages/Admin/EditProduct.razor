@@ -1,0 +1,135 @@
+﻿@page "/admin/product/{id:int}"
+@inject ICategoryService CategoryService
+@inject IEditionService EditionService
+@inject IProductService ProductService
+@inject IToastService ToastService
+@inject NavigationManager navigationManager
+
+
+<section class="shoping-cart spad">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 mt-5">
+                <div class="checkout__form">
+                    <h4>Add product</h4>
+                </div>
+            </div>
+            <div class="col-lg-12">
+                <EditForm Model="product" OnValidSubmit="UpdateProduct">
+                    <DataAnnotationsValidator />
+                    <div class="form-group">
+                        <label for="productTitle">Title</label>
+                        <InputText class="form-control" id="productTitle" @bind-Value="product.Title" placeholder="Enter your product title" />
+                    </div>
+                    <div class="form-group">
+                        <label for="productImg">Image</label>
+                        <InputText class="form-control" id="productImg" @bind-Value="product.Image" placeholder="Enter product image" />
+                    </div>
+                    <div class="form-group">
+                        <label for="productDescription">Description</label>
+                        <InputTextArea class="form-control" id="productDescription" @bind-Value="product.Description" rows="4"></InputTextArea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-12">
+                            <label for="inputCategory">Category</label>
+                            <InputSelect id="inputCategory" class="form-control" @bind-Value="product.CategoryId">
+                                @foreach (var category in CategoryService.Categories)
+                                {
+                                    <option value="@category.Id.ToString()">@category.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+                    </div>
+                    <h5 class="w-100 border-bottom my-3 pb-2 text-dark font-weight-bold" style="border-bottom-style: dashed !important;">Variant</h5>
+                    @foreach (var variant in product.Variants)
+                    {
+                        <div class="form-row">
+                            <div class="form-group col-3">
+                                <label for="inputEditon">Type</label>
+                                <InputSelect id="inputEdition" class="form-control" @bind-Value="variant.EditionId">
+                                    @foreach (var edition in Editions)
+                                    {
+                                    <option value="@edition.Id.ToString()">@edition.Name</option>
+                                    }
+                            </InputSelect>
+                        </div>
+                        <div class="form-group col-3">
+                            <label>Price</label>
+                            <InputNumber class="form-control" placeholder="Enter price" @bind-Value="variant.Price" />
+                        </div>
+                        <div class="form-group col-3">
+                            <label>Original price</label>
+                            <InputNumber class="form-control" placeholder="Enter original price" @bind-Value="variant.OriginalPrice" />
+                        </div>
+                        <div class="form-group col-3 d-flex justify-content-end align-items-end">
+                            <button type="button" class="btn btn-danger" @onclick="@(() => RemoveVariant(variant.EditionId))">Xoá</button>
+                        </div>
+                    </div>
+                    }
+                    <div class="form-row">
+                        <div class="form-group col-12">
+                            <button type="button" class="btn btn-primary" @onclick="AddVariant">Add variant</button>
+                        </div>
+                    </div>
+                    <h5 class="w-100 border-bottom my-3 pb-2 text-dark font-weight-bold" style="border-bottom-style: dashed !important;"></h5>
+                    <div class="form-group">
+                        <div class="form-check">
+                            <InputCheckbox class="form-check-input" id="gridCheck" @bind-Value="product.IsPublic" />
+                            <label class="form-check-label" for="gridCheck">
+                                Is Public
+                            </label>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-success px-5">Submit</button>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+</section>
+@code {
+    [Parameter]
+    public int Id { get; set; }
+    Product product = new Product();
+    List<Edition> Editions = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        product = await ProductService.GetProduct(Id);
+        await CategoryService.LoadCategories();
+        Editions = await EditionService.GetEditions();
+    }
+
+    private void AddVariant()
+    {
+        product.Variants.Add(new ProductVariant
+            {
+                ProductId = product.Id
+            });
+    }
+
+    void RemoveVariant(int productTypeId)
+    {
+        var variant = product.Variants.Find(v => v.EditionId == productTypeId);
+        if (variant == null)
+        {
+            return;
+        }
+
+        product.Variants.Remove(variant);
+    }
+
+    private async void UpdateProduct()
+    {
+        product.Variants.ForEach(v =>v.Edition = Editions.Find(e => e.Id == v.EditionId));
+        var result = await ProductService.UpdateProduct(product);
+        if (result.Data)
+        {
+            ToastService.ShowSuccess(result.Message);
+            navigationManager.NavigateTo("");
+        }
+        else
+        {
+            ToastService.ShowSuccess(result.Message);
+        }
+    }
+}
