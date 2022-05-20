@@ -7,7 +7,7 @@
   
   </tr>
   <tr>
-    <td>Phạm Tuấn Khanh</td>
+    <td style="color : red">Phạm Tuấn Khanh</td>
     <td>311941083</td>
    
   </tr>
@@ -17,8 +17,8 @@
     
   </tr>
    <tr>
-    <td>Minh Phát </td>
-    <td>????</td>
+    <td> Phạm Minh Phát </td>
+    <td>3119410298</td>
     
   </tr>
   
